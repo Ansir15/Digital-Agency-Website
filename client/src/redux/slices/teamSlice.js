@@ -1,8 +1,9 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import axiosInstance from '../../utils/axiosInstance'
+import { staticTeamMembers } from '../../data/staticData'
 
 const initialState = {
-  members: [],
+  members: staticTeamMembers,
   currentMember: null,
   isLoading: false,
   error: null,
@@ -98,6 +99,7 @@ const teamSlice = createSlice({
       .addCase(fetchAllMembers.rejected, (state, action) => {
         state.isLoading = false
         state.error = action.payload
+        state.members = staticTeamMembers
       })
       // Create member
       .addCase(createMember.pending, (state) => {

@@ -1,8 +1,9 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import axiosInstance from '../../utils/axiosInstance'
+import { staticBlogPosts } from '../../data/staticData'
 
 const initialState = {
-  posts: [],
+  posts: staticBlogPosts,
   currentPost: null,
   relatedPosts: [],
   isLoading: false,
@@ -32,6 +33,13 @@ export const fetchPostBySlug = createAsyncThunk(
       const response = await axiosInstance.get(`/blog/${slug}`)
       return response.data.data
     } catch (error) {
+      const fallbackPost = staticBlogPosts.find((post) => post.slug === slug)
+      if (fallbackPost) {
+        const relatedPosts = staticBlogPosts
+          .filter((post) => post.category === fallbackPost.category && post.slug !== slug)
+          .slice(0, 3)
+        return { post: fallbackPost, relatedPosts }
+      }
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch post')
     }
   }
@@ -105,6 +113,7 @@ const blogSlice = createSlice({
       .addCase(fetchPosts.rejected, (state, action) => {
         state.isLoading = false
         state.error = action.payload
+        state.posts = staticBlogPosts
       })
       // Fetch single post
       .addCase(fetchPostBySlug.pending, (state) => {

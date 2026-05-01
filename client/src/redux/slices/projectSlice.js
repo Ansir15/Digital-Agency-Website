@@ -1,9 +1,10 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import axiosInstance from '../../utils/axiosInstance'
+import { staticProjects } from '../../data/staticData'
 
 const initialState = {
-  projects: [],
-  featuredProjects: [],
+  projects: staticProjects,
+  featuredProjects: staticProjects.filter((project) => project.featured).slice(0, 3),
   currentProject: null,
   isLoading: false,
   error: null,
@@ -116,10 +117,14 @@ const projectSlice = createSlice({
       .addCase(fetchProjects.rejected, (state, action) => {
         state.isLoading = false
         state.error = action.payload
+        state.projects = staticProjects
       })
       // Fetch featured projects
       .addCase(fetchFeaturedProjects.fulfilled, (state, action) => {
         state.featuredProjects = action.payload
+      })
+      .addCase(fetchFeaturedProjects.rejected, (state) => {
+        state.featuredProjects = staticProjects.filter((project) => project.featured).slice(0, 3)
       })
       // Fetch single project
       .addCase(fetchProjectById.pending, (state) => {
