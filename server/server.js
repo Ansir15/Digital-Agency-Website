@@ -20,12 +20,31 @@ const PORT = process.env.PORT || 5000;
 connectDB();
 
 // CORS configuration
+const allowedOrigins = [
+  process.env.CLIENT_URL,
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+  'http://localhost:3000',
+  'http://127.0.0.1:3000'
+].filter(Boolean)
+
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:5173',
+  origin: (origin, callback) => {
+    if (!origin) {
+      // Allow non-browser requests like Postman or server-side requests
+      return callback(null, true)
+    }
+
+    if (allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
+      return callback(null, true)
+    }
+
+    callback(new Error(`CORS policy does not allow access from origin ${origin}`))
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization']
-}));
+}))
 
 // Middleware
 app.use(express.json({ limit: '10mb' }));
